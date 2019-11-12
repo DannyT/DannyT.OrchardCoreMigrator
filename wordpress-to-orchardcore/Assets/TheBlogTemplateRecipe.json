@@ -1,0 +1,170 @@
+{
+  "name": "",
+  "displayName": "",
+  "description": "",
+  "author": "",
+  "website": "",
+  "version": "",
+  "issetuprecipe": false,
+  "categories": "",
+  "tags": [],
+  "steps": [
+    {
+        "name": "Feature",
+        "disable": [],
+        "enable": [
+            "OrchardCore.Taxonomies"
+        ]
+    },
+    {
+        "name": "ContentDefinition",
+        "ContentTypes": [
+            {
+                "Name": "Category",
+                "DisplayName": "Category",
+                "Settings": {
+                    "Creatable": "True",
+                    "Draftable": "True",
+                    "Versionable": "True",
+                    "Listable": "True",
+                    "Securable": "True"
+                },
+                "ContentTypePartDefinitionRecords": [
+                    {
+                        "PartName": "Category",
+                        "Name": "Category",
+                        "Settings": {}
+                    },
+                    {
+                        "PartName": "TitlePart",
+                        "Name": "TitlePart",
+                        "Settings": {}
+                    }
+                ]
+            },
+            {
+                "Name": "Tag",
+                "DisplayName": "Tag",
+                "Settings": {
+                    "Creatable": "True",
+                    "Draftable": "True",
+                    "Versionable": "True",
+                    "Listable": "True",
+                    "Securable": "True",
+                    "Stereotype": null
+                },
+                "ContentTypePartDefinitionRecords": [
+                    {
+                        "PartName": "Tag",
+                        "Name": "Tag",
+                        "Settings": {
+                            "Position": "1"
+                        }
+                    },
+                    {
+                        "PartName": "TitlePart",
+                        "Name": "TitlePart",
+                        "Settings": {
+                            "Position": "0"
+                        }
+                    }
+                ]
+            }
+        ],
+        "ContentParts": [
+            {
+                "Name": "BlogPost",
+                "Settings": {},
+                "ContentPartFieldDefinitionRecords": [
+                    {
+                        "FieldName": "TextField",
+                        "Name": "Subtitle",
+                        "Settings": {
+                            "DisplayName": "Subtitle"
+                        }
+                    },
+                    {
+                        "FieldName": "TaxonomyField",
+                        "Name": "Categories",
+                        "Settings": {
+                            "DisplayName": "Categories",
+                            "Editor": null,
+                            "DisplayMode": null,
+                            "ContentIndexSettings": {
+                                "Included": false,
+                                "Stored": false,
+                                "Analyzed": false,
+                                "Sanitized": false,
+                                "Tokenized": false,
+                                "Template": null
+                            },
+                            "Hint": null,
+                            "Required": false,
+                            "TaxonomyContentItemId": "4zwnd978ed66tvxj1cb69mbc5z",
+                            "Unique": false,
+                            "LeavesOnly": false,
+                            "Open": false
+                        }
+                    },
+                    {
+                        "FieldName": "TaxonomyField",
+                        "Name": "Tags",
+                        "Settings": {
+                            "DisplayName": "Tags",
+                            "Editor": null,
+                            "DisplayMode": null,
+                            "ContentIndexSettings": {
+                                "Included": false,
+                                "Stored": false,
+                                "Analyzed": false,
+                                "Sanitized": false,
+                                "Tokenized": false,
+                                "Template": null
+                            },
+                            "Hint": null,
+                            "Required": false,
+                            "TaxonomyContentItemId": "49ymvebjd46550a9z95j4udiej",
+                            "Unique": false,
+                            "LeavesOnly": false,
+                            "Open": false
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "AdminMenu",
+        "data": [
+            {
+                "Id": "baef6f85ad13481681cde70ada401333",
+                "Name": "Admin menu from blog recipe",
+                "Enabled": true,
+                "MenuItems": [
+                    {
+                        "$type": "OrchardCore.AdminMenu.AdminNodes.LinkAdminNode, OrchardCore.AdminMenu",
+                        "LinkText": "Imported Blog",
+                        "LinkUrl": "/this/shoud/be/replaced/",
+                        "IconClass": "fas fa-rss",
+                        "UniqueId": "7b293d57056a4eebb3713f07f12c65d9",
+                        "Enabled": true,
+                        "Text": null,
+                        "Id": null,
+                        "Href": null,
+                        "Url": null,
+                        "Position": null,
+                        "LinkToFirstChild": true,
+                        "LocalNav": false,
+                        "Culture": null,
+                        "Resource": null,
+                        "Items": [],
+                        "RouteValues": null,
+                        "Permissions": [],
+                        "Classes": []
+                    }
+                ]
+            }
+        ]
+    }
+  ]
+}

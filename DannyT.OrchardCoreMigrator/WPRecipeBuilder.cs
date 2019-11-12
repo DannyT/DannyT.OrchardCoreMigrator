@@ -8,6 +8,7 @@ using System.IO;
 using Html2Markdown;
 using System.IO.Compression;
 using System.Net;
+using DannyT.OrchardCoreMigrator.ContentBuilders;
 
 namespace DannyT.OrchardCoreMigrator
 {
@@ -21,6 +22,9 @@ namespace DannyT.OrchardCoreMigrator
         private readonly List<WordpressItem> wordpressItems;
         private readonly List<WordpressCategory> wordpressCategories;
         private readonly List<WordpressTag> wordpressTags;
+        private readonly IContentBuilder postBuilder;
+        private readonly IContentBuilder pageBuilder;
+        private readonly UrlCleaner urlCleaner;
         private string blogName;
         private string blogDescription;
         private IEnumerable<string> uploadUrls;
@@ -31,7 +35,7 @@ namespace DannyT.OrchardCoreMigrator
         /// <param name="fileToImport">Path to wordpress export file</param>
         /// <param name="recipeTemplateFile">Path to template Orchard Core recipe containing required content definitions</param>
         /// <param name="workingFolder">Output folder where recipe zip will end up</param>
-        public WPRecipeBuilder(string fileToImport, string recipeTemplateFile, string workingFolder)
+        public WPRecipeBuilder(string fileToImport, string recipeTemplateFile, string workingFolder, RecipeSettings recipeSettings)
         {
             creationDateTime = DateTime.UtcNow.ToString("o");
             this.fileToImport = fileToImport;
@@ -45,8 +49,43 @@ namespace DannyT.OrchardCoreMigrator
             wordpressItems = new List<WordpressItem>();
             wordpressCategories = new List<WordpressCategory>();
             wordpressTags = new List<WordpressTag>();
-        }
+            urlCleaner = new UrlCleaner();
 
+            // initialise content builders to reflect the desired recipe
+            switch (recipeSettings.Theme)
+            {
+                case RecipeSettings.Themes.TheBlog:
+                    postBuilder = new TheBlogPostBuilder
+                    {
+                        ParentId = "4m2pj0mpy25450jcz817odyhbg",
+                        WordpressItems = wordpressItems,
+                        WordpressCategories = wordpressCategories,
+                        WordpressTags = wordpressTags,
+                        UrlCleaner = urlCleaner
+                    };
+                    pageBuilder = new TheBlogPageBuilder
+                    {
+                        WordpressItems = wordpressItems,
+                        UrlCleaner = urlCleaner
+                    };
+                    break;
+                case RecipeSettings.Themes.EtchPlayBoilerplate:
+                    postBuilder = new EtchPlayBoilerplatePostBuilder
+                    {
+                        ParentId = "4dzdnpafscnp33y8xdz4ch45xt",
+                        WordpressItems = wordpressItems,
+                        WordpressCategories = wordpressCategories,
+                        WordpressTags = wordpressTags,
+                        UrlCleaner = urlCleaner
+                    };
+                    pageBuilder = new EtchPlayBoilerplatePageBuilder
+                    {
+                        WordpressItems = wordpressItems,
+                        UrlCleaner = urlCleaner
+                    };
+                    break;
+            }
+        }
 
         public void Build()
         {
@@ -75,16 +114,15 @@ namespace DannyT.OrchardCoreMigrator
             JObject mediaStep = GetMedia();
 
             // Create Content Step
-            string blogId = "4m2pj0mpy25450jcz817odyhbg";
             JObject contentStep = new JObject(
                 new JProperty("name", "content"),
                 new JProperty("data",
                     new JArray(
                         GetCategories(),
                         GetTags(),
-                        GetPages(),
-                        GetBlog(blogId),
-                        GetPosts(blogId)
+                        pageBuilder.GetContent(),
+                        GetBlog("4m2pj0mpy25450jcz817odyhbg"),
+                        postBuilder.GetContent()
                     )
                 )
             );
@@ -104,10 +142,10 @@ namespace DannyT.OrchardCoreMigrator
             // Deserialize recipe steps
             JArray steps = (JArray)recipeJson["steps"];
 
-            // update admin menu blog link
-            JObject adminMenuBlogLink = (JObject)steps[steps.Count() - 1]["data"][0]["MenuItems"][0];
-            adminMenuBlogLink["LinkText"] = blogName;
-            adminMenuBlogLink["LinkUrl"] = $"[js: 'Admin/Contents/ContentItems/{blogId}/Display']";
+            // TODO: Dynamically add admin menu items, maybe?
+            //JObject adminMenuBlogLink = (JObject)steps[steps.Count() - 1]["data"][0]["MenuItems"][0];
+            //adminMenuBlogLink["LinkText"] = blogName;
+            //adminMenuBlogLink["LinkUrl"] = $"[js: 'Admin/Contents/ContentItems/{blogId}/Display']";
 
             // add content
             steps.Add(mediaStep);
@@ -139,151 +177,6 @@ namespace DannyT.OrchardCoreMigrator
             Directory.Delete(recipeFolder, true);
 
             Console.WriteLine("Import complete, recipe ready.");
-        }
-
-        private IEnumerable<JObject> GetPages()
-        {
-            return from p in wordpressItems
-                   where p.Type == "page"
-                   select new JObject(
-                       new JProperty("ContentItemId", $"wppage-{p.Id.ToString()}"),
-                       new JProperty("ContentItemVersionId", $"wppage-{p.Id.ToString()}"),
-                       new JProperty("ContentType", "Page"),
-                       new JProperty("DisplayText", p.Title),
-                       new JProperty("Latest", true),
-                       new JProperty("Published", p.Status == "publish"),
-                       new JProperty("ModifiedUtc", Convert.ToDateTime(p.DatePublished)),
-                       new JProperty("PublishedUtc", Convert.ToDateTime(p.DatePublished)),
-                       new JProperty("CreatedUtc", Convert.ToDateTime(p.DatePublished)),
-                       new JProperty("Owner", p.CreatedByUsername), 
-                       new JProperty("Author", p.CreatedByUsername),
-                       new JProperty("Page", new JObject()),
-                       new JProperty("AutoroutePart",
-                            new JObject(
-                               new JProperty("Path", SanitiseRelativePath(p.Link)), // TODO: option to set new autoroute and create 403 from old path
-                               new JProperty("SetHomepage", false)
-                               )
-                           ),
-                       new JProperty("FlowPart",
-                            new JObject(
-                                new JProperty("Widgets",
-                                    new JArray(
-                                        new JObject(
-                                            new JProperty("ContentItemId", $"wppagewidget-{p.Id.ToString()}"),
-                                           new JProperty("ContentItemVersionId", $"wppagewidget-{p.Id.ToString()}"),
-                                           new JProperty("ContentType", "RawHtml"),
-                                           new JProperty("DisplayText", null),
-                                           new JProperty("Latest", false),
-                                           new JProperty("Published", false),
-                                           new JProperty("ModifiedUtc", Convert.ToDateTime(p.DatePublished)),
-                                           new JProperty("PublishedUtc", null),
-                                           new JProperty("CreatedUtc", null),
-                                           new JProperty("Owner", null), 
-                                           new JProperty("Author", p.CreatedByUsername),
-                                           new JProperty("RawHtml",
-                                                new JObject(
-                                                    new JProperty("Content",
-                                                        new JObject(
-                                                            new JProperty("Html", p.Content)
-                                                            )
-                                                        )
-                                                    )
-                                                ),
-                                           new JProperty("FlowMetadata",
-                                            new JObject(
-                                                new JProperty("Alignment", 3),
-                                                new JProperty("Size", 100)
-                                                )
-                                            )
-                                           )
-                                        )
-                                    )
-                                )
-                            ),
-                       new JProperty("TitlePart",
-                           new JObject(
-                               new JProperty("Title", p.Title)
-                               )
-                           )
-                       );
-        }
-        
-
-        private IEnumerable<JObject> GetPosts(string blogId)
-        {
-            Converter markdownConverter = new Converter();
-            // Blog posts content items
-            return from p in wordpressItems
-                   where p.Type == "post"
-                   select new JObject(
-                       new JProperty("ContentItemId", $"wppost-{p.Id.ToString()}"),
-                       new JProperty("ContentItemVersionId", $"wppost-{p.Id.ToString()}"),
-                       new JProperty("ContentType", "BlogPost"),
-                       new JProperty("DisplayText", p.Title),
-                       new JProperty("Latest", true),
-                       new JProperty("Published", p.Status == "publish"),
-                       new JProperty("ModifiedUtc", Convert.ToDateTime(p.DatePublished)),
-                       new JProperty("PublishedUtc", Convert.ToDateTime(p.DatePublished)),
-                       new JProperty("CreatedUtc", Convert.ToDateTime(p.DatePublished)),
-                       new JProperty("Owner", p.CreatedByUsername), 
-                       new JProperty("Author", p.CreatedByUsername),
-                       new JProperty("TitlePart",
-                           new JObject(
-                               new JProperty("Title", p.Title)
-                               )
-                           ),
-                       new JProperty("ContainedPart",
-                           new JObject(
-                               new JProperty("ListContentItemId", blogId),
-                               new JProperty("Order", 0)
-                               )
-                           ),
-                       new JProperty("MarkdownBodyPart",
-                           new JObject(
-                               new JProperty("Markdown", p.Content)//markdownConverter.Convert(p.Content)) // TODO: support html parts as well
-                               )
-                           ),
-                       new JProperty("AutoroutePart",
-                           new JObject(
-                               new JProperty("Path", SanitiseRelativePath(p.Link)), // TODO: option to set new autoroute and create 403 from old path
-                               new JProperty("SetHomepage", false)
-                               )
-                           ),
-                       new JProperty("BlogPost",
-                           new JObject(
-                               new JProperty("Subtitle",
-                                   new JObject(
-                                       new JProperty("Text", null)
-                                   )
-                               ), new JProperty("Categories",
-                            new JObject(
-                                new JProperty("TermContentItemIds",
-                                    new JArray(
-                                        from c in p.Categories
-                                        select (from cat in wordpressCategories
-                                                where cat.NiceName == c
-                                                select $"wpcat-{cat.Id.ToString()}").FirstOrDefault().ToString()
-                                            )
-                                    ),
-                                new JProperty("TaxonomyContentItemId", "4zwnd978ed66tvxj1cb69mbc5z") // TODO: make variable
-                            )
-                        ),
-                       new JProperty("Tags",
-                            new JObject(
-                                new JProperty("TermContentItemIds",
-                                    new JArray(
-                                        from t in p.Tags
-                                        select (from tag in wordpressTags
-                                                where tag.Slug == t
-                                                select $"wptag-{tag.Id.ToString()}").FirstOrDefault().ToString()
-                                            )
-                                    ),
-                                new JProperty("TaxonomyContentItemId", "49ymvebjd46550a9z95j4udiej") // TODO: make variable
-                            )
-                        )
-                    )
-                )
-            );
         }
 
         private JObject GetBlog(string blogId)
@@ -329,22 +222,15 @@ namespace DannyT.OrchardCoreMigrator
                     new JArray(
                         from a in uploadUrls
                         select new JObject(
-                            new JProperty("SourcePath", SanitiseRelativePath(a)),
-                            new JProperty("TargetPath", SanitiseRelativePath(a))
+                            new JProperty("SourcePath", urlCleaner.SanitiseRelativePath(a)),
+                            new JProperty("TargetPath", urlCleaner.SanitiseRelativePath(a))
                         )
                     )
                 )
             );
         }
 
-        private string SanitiseRelativePath(string url)
-        {
-            // remove domain part of URL
-            string tempPath = url.Substring(url.IndexOf("//") + 2);
-            string relativeFilePath = tempPath.Substring(tempPath.IndexOf("/") + 1);
-
-            return relativeFilePath;
-        }
+        
 
         private JObject GetTags()
         {
@@ -473,8 +359,10 @@ namespace DannyT.OrchardCoreMigrator
 
         private void ConsumeImport()
         {
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.IgnoreWhitespace = true;
+            XmlReaderSettings settings = new XmlReaderSettings
+            {
+                IgnoreWhitespace = true
+            };
             using XmlReader reader = XmlReader.Create(fileToImport, settings);
             while (reader.Read())
             {

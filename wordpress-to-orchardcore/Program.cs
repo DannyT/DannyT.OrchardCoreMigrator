@@ -20,11 +20,17 @@ namespace wordpress_to_orchardcore
                 wordpressExport = args[0].ToString();
                 Console.WriteLine($"Using wordpress export file: {wordpressExport}");
             }
-            
-            string templateRecipe = @"Assets\TemplateRecipe.json";
+
+            //string templateRecipe = @"Assets\TheBlogTemplateRecipe.json";
+            string templateRecipe = @"Assets\EtchPlayTemplateRecipe.json";
             string workingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDoc‌​uments), "WpToOc");
 
-            IRecipeBuilder recipeBuilder = new WPRecipeBuilder(wordpressExport, templateRecipe, workingFolder);
+            RecipeSettings recipeSettings = new RecipeSettings
+            {
+                Theme = RecipeSettings.Themes.EtchPlayBoilerplate
+            };
+
+            IRecipeBuilder recipeBuilder = new WPRecipeBuilder(wordpressExport, templateRecipe, workingFolder, recipeSettings);
             recipeBuilder.Build();
             System.Diagnostics.Process.Start("explorer.exe", workingFolder);
             return 0;

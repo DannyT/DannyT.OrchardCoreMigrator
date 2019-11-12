@@ -1,0 +1,13 @@
+{
+    "name": "Wordpress import",
+    "displayName": "Wordpress import",
+    "description": "Wordpress import to Etch Play Boilerplate",
+    "author": "Etch",
+    "website": "https://etchuk.com",
+    "version": "0.0.1",
+    "issetuprecipe": false,
+    "categories": [ "Content" ],
+    "tags": [ "etch" ],
+    "steps": [
+    ]
+}
