@@ -11,7 +11,6 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
         public List<WordpressItem> WordpressItems { get; set; }
         public List<WordpressCategory> WordpressCategories { get; set; }
         public List<WordpressTag> WordpressTags { get; set; }
-        public UrlCleaner UrlCleaner { get; set; }
 
         public IEnumerable<JObject> GetContent()
         {
@@ -32,7 +31,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                        new JProperty("Page", new JObject()),
                        new JProperty("AutoroutePart",
                             new JObject(
-                               new JProperty("Path", UrlCleaner.SanitiseRelativePath(p.Link)), // TODO: option to set new autoroute and create 403 from old path
+                               new JProperty("Path", p.Link),
                                new JProperty("SetHomepage", false)
                                )
                            ),

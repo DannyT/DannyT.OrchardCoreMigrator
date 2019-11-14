@@ -9,6 +9,7 @@ using Html2Markdown;
 using System.IO.Compression;
 using System.Net;
 using DannyT.OrchardCoreMigrator.ContentBuilders;
+using Slugify;
 
 namespace DannyT.OrchardCoreMigrator
 {
@@ -19,6 +20,7 @@ namespace DannyT.OrchardCoreMigrator
         private readonly string recipeTemplateFile;
         private readonly string workingFolder;
         private readonly string recipeFolder;
+        private readonly RecipeSettings recipeSettings;
         private readonly List<WordpressItem> wordpressItems;
         private readonly List<WordpressCategory> wordpressCategories;
         private readonly List<WordpressTag> wordpressTags;
@@ -46,6 +48,8 @@ namespace DannyT.OrchardCoreMigrator
             recipeFolder = Path.Combine(workingFolder, "recipe");
             Directory.CreateDirectory(recipeFolder);
 
+            this.recipeSettings = recipeSettings;
+
             wordpressItems = new List<WordpressItem>();
             wordpressCategories = new List<WordpressCategory>();
             wordpressTags = new List<WordpressTag>();
@@ -60,13 +64,11 @@ namespace DannyT.OrchardCoreMigrator
                         ParentId = "4m2pj0mpy25450jcz817odyhbg",
                         WordpressItems = wordpressItems,
                         WordpressCategories = wordpressCategories,
-                        WordpressTags = wordpressTags,
-                        UrlCleaner = urlCleaner
+                        WordpressTags = wordpressTags
                     };
                     pageBuilder = new TheBlogPageBuilder
                     {
-                        WordpressItems = wordpressItems,
-                        UrlCleaner = urlCleaner
+                        WordpressItems = wordpressItems
                     };
                     break;
                 case RecipeSettings.Themes.EtchPlayBoilerplate:
@@ -75,13 +77,11 @@ namespace DannyT.OrchardCoreMigrator
                         ParentId = "4dzdnpafscnp33y8xdz4ch45xt",
                         WordpressItems = wordpressItems,
                         WordpressCategories = wordpressCategories,
-                        WordpressTags = wordpressTags,
-                        UrlCleaner = urlCleaner
+                        WordpressTags = wordpressTags
                     };
                     pageBuilder = new EtchPlayBoilerplatePageBuilder
                     {
-                        WordpressItems = wordpressItems,
-                        UrlCleaner = urlCleaner
+                        WordpressItems = wordpressItems
                     };
                     break;
             }
@@ -94,6 +94,10 @@ namespace DannyT.OrchardCoreMigrator
             Console.WriteLine("Reading WP export file");
             
             ConsumeImport(); // reads WP file and creates list of items
+
+            Console.WriteLine("Tidying link formats");
+
+            UpdatePermalinks(); // replace links with either relative versions or updated permalink structure (based on recipe settings)
 
             // Get all images as list of urls
             uploadUrls =
@@ -122,7 +126,8 @@ namespace DannyT.OrchardCoreMigrator
                         GetTags(),
                         pageBuilder.GetContent(),
                         GetBlog("4m2pj0mpy25450jcz817odyhbg"),
-                        postBuilder.GetContent()
+                        postBuilder.GetContent(),
+                        GetRedirects()
                     )
                 )
             );
@@ -177,6 +182,59 @@ namespace DannyT.OrchardCoreMigrator
             Directory.Delete(recipeFolder, true);
 
             Console.WriteLine("Import complete, recipe ready.");
+        }
+
+        private IEnumerable<JObject> GetRedirects()
+        {
+            return from p in wordpressItems
+                   where p.Type == "post" || p.Type == "page"
+                   select new JObject(
+                       new JProperty("ContentItemId", $"redirect-{p.Id.ToString()}"),
+                       new JProperty("ContentItemVersionId", $"redirect-{p.Id.ToString()}"),
+                       new JProperty("ContentType", "Redirect"),
+                       new JProperty("DisplayText", p.Title),
+                       new JProperty("Latest", true),
+                       new JProperty("Published", p.Status == "publish"),
+                       new JProperty("ModifiedUtc", creationDateTime),
+                       new JProperty("PublishedUtc", creationDateTime),
+                       new JProperty("CreatedUtc", creationDateTime),
+                       new JProperty("Owner", "WP Import"),
+                       new JProperty("Author", "WP Import"),
+                       new JProperty("TitlePart",
+                           new JObject(
+                               new JProperty("Title", p.Title)
+                               )
+                           ),
+                       new JProperty("RedirectPart",
+                           new JObject(
+                               new JProperty("FromUrl", p.OldLink),
+                               new JProperty("ToUrl", p.Link),
+                               new JProperty("IsPermanent", true)
+                               )
+                           )
+                       );
+        }
+
+        private void UpdatePermalinks()
+        {
+            SlugHelper.Config slugConfig = new SlugHelper.Config();
+            // remove question marks from titles (default replaces with dash)
+            slugConfig.StringReplacements.Add("?", "");
+            SlugHelper helper = new SlugHelper();
+
+
+            foreach (WordpressItem item in wordpressItems.Where(p => p.Type == "post" || p.Type == "page"))
+            {
+                if (recipeSettings.CreateRedirects)
+                {
+                    item.OldLink = urlCleaner.SanitiseRelativePath(item.Link);
+                    item.Link = $"/{DateTime.Parse(item.DatePublished).ToString(recipeSettings.PermalinkStructure)}/{helper.GenerateSlug(item.Title)}";
+                }
+                else
+                {
+                    item.Link = urlCleaner.SanitiseRelativePath(item.Link, true);
+                }
+            }
         }
 
         private JObject GetBlog(string blogId)

@@ -27,7 +27,9 @@ namespace wordpress_to_orchardcore
 
             RecipeSettings recipeSettings = new RecipeSettings
             {
-                Theme = RecipeSettings.Themes.EtchPlayBoilerplate
+                Theme = RecipeSettings.Themes.EtchPlayBoilerplate,
+                CreateRedirects = true,
+                PermalinkStructure = "yyyy/MM/dd"
             };
 
             IRecipeBuilder recipeBuilder = new WPRecipeBuilder(wordpressExport, templateRecipe, workingFolder, recipeSettings);

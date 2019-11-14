@@ -9,7 +9,6 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
         List<WordpressItem> WordpressItems { get; set; }
         List<WordpressCategory> WordpressCategories { get; set; }
         List<WordpressTag> WordpressTags { get; set; }
-        UrlCleaner UrlCleaner { get; set; }
         string ParentId { get; set; }
     }
 }

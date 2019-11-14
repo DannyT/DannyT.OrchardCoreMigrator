@@ -13,6 +13,7 @@ namespace DannyT.OrchardCoreMigrator
 
         public string Title { get; internal set; }
         public string Link { get; internal set; }
+        public string OldLink { get; internal set; } // used to create redirects
         public string DatePublished { get; internal set; }
         public string CreatedByUsername { get; internal set; }
         public string Content { get; internal set; }

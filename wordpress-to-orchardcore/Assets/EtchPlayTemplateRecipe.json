@@ -9,5 +9,13 @@
     "categories": [ "Content" ],
     "tags": [ "etch" ],
     "steps": [
+        {
+            "name": "Feature",
+            "enable": [
+                "Etch.OrchardCore.News",
+                "Etch.OrchardCore.SEO.Redirects"
+            ],
+            "disable": []
+        }
     ]
 }
