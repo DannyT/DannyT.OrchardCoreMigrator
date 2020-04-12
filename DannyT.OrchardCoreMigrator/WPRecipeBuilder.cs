@@ -293,8 +293,8 @@ namespace DannyT.OrchardCoreMigrator
         private JObject GetTags()
         {
             return new JObject(
-                new JProperty("ContentItemId", "49ymvebjd46550a9z95j4udiej"),
-                new JProperty("ContentItemVersionId", "4s62f1v0kq6hc36t412d87yy56"),
+                new JProperty("ContentItemId", "45dmkhfhg1fsese84swhh990we"),
+                new JProperty("ContentItemVersionId", "4amfyp4trwn4bteddf892gf3df"),
                 new JProperty("ContentType", "Taxonomy"),
                 new JProperty("DisplayText", "Tags"),
                 new JProperty("Latest", true),

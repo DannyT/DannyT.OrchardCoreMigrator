@@ -70,7 +70,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                                         new JProperty("Text", "") // TODO: featured image alt
                                         )
                                     ),
-                                new JProperty("Author", 
+                                new JProperty("Author",
                                     new JObject(
                                         new JProperty("Text", p.CreatedByUsername)
                                         )
@@ -80,19 +80,32 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                                         new JProperty("ContentItemIds", new JArray()) // TODO: work out featured images
                                         )
                                     ),
-                               new JProperty("Tags",
+                               new JProperty("Categories",
                                     new JObject(
                                         new JProperty("TermContentItemIds",
-                                            new JArray(
-                                                from t in p.Tags
-                                                select (from tag in WordpressTags
-                                                        where tag.Slug == t
-                                                        select $"wptag-{tag.Id.ToString()}").FirstOrDefault().ToString()
+                                        new JArray(
+                                            from c in p.Categories
+                                            select (from cat in WordpressCategories
+                                                    where cat.NiceName == c
+                                                    select $"wpcat-{cat.Id.ToString()}").FirstOrDefault().ToString()
                                             )
                                         ),
-                                        new JProperty("TaxonomyContentItemId", "49ymvebjd46550a9z95j4udiej") // TODO: make variable
+                                        new JProperty("TaxonomyContentItemId", "4zwnd978ed66tvxj1cb69mbc5z") // TODO: make variable
                                     )
+                                ),
+                                new JProperty("Tags",
+                                    new JObject(
+                                    new JProperty("TermContentItemIds",
+                                        new JArray(
+                                            from t in p.Tags
+                                            select (from tag in WordpressTags
+                                                    where tag.Slug == t
+                                                    select $"wptag-{tag.Id.ToString()}").FirstOrDefault().ToString()
+                                                )
+                                        ),
+                                    new JProperty("TaxonomyContentItemId", "49ymvebjd46550a9z95j4udiej") // TODO: make variable
                                 )
+                            )
                             )
                     )
             );

@@ -62,21 +62,22 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                                    new JObject(
                                        new JProperty("Text", null)
                                    )
-                               ), new JProperty("Categories",
-                            new JObject(
-                                new JProperty("TermContentItemIds",
-                                    new JArray(
-                                        from c in p.Categories
-                                        select (from cat in WordpressCategories
-                                                where cat.NiceName == c
-                                                select $"wpcat-{cat.Id.ToString()}").FirstOrDefault().ToString()
+                               ), 
+                               new JProperty("Categories",
+                                    new JObject(
+                                        new JProperty("TermContentItemIds",
+                                        new JArray(
+                                            from c in p.Categories
+                                            select (from cat in WordpressCategories
+                                                    where cat.NiceName == c
+                                                    select $"wpcat-{cat.Id.ToString()}").FirstOrDefault().ToString()
                                             )
-                                    ),
-                                new JProperty("TaxonomyContentItemId", "4zwnd978ed66tvxj1cb69mbc5z") // TODO: make variable
-                            )
-                        ),
-                       new JProperty("Tags",
-                            new JObject(
+                                        ),
+                                        new JProperty("TaxonomyContentItemId", "4zwnd978ed66tvxj1cb69mbc5z") // TODO: make variable
+                                    )
+                                ),
+                            new JProperty("Tags",
+                                new JObject(
                                 new JProperty("TermContentItemIds",
                                     new JArray(
                                         from t in p.Tags
