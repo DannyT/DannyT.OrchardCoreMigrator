@@ -100,7 +100,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                                             from t in p.Tags
                                             select (from tag in WordpressTags
                                                     where tag.Slug == t
-                                                    select $"wptag-{tag.Id.ToString()}").FirstOrDefault().ToString()
+                                                    select $"wptag-{tag.Id.ToString()}").FirstOrDefault()?.ToString()
                                                 )
                                         ),
                                     new JProperty("TaxonomyContentItemId", "49ymvebjd46550a9z95j4udiej") // TODO: make variable

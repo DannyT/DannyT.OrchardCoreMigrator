@@ -30,6 +30,7 @@ namespace DannyT.OrchardCoreMigrator
         private string blogName;
         private string blogDescription;
         private IEnumerable<string> uploadUrls;
+        private readonly List<string> failedMediaUrls;
 
         /// <summary>
         /// Wordpress Recipe Builder. Takes a wordpress export and creates an Orchard Core recipe.
@@ -54,6 +55,7 @@ namespace DannyT.OrchardCoreMigrator
             wordpressCategories = new List<WordpressCategory>();
             wordpressTags = new List<WordpressTag>();
             urlCleaner = new UrlCleaner();
+            failedMediaUrls = new List<string>();
 
             // initialise content builders to reflect the desired recipe
             switch (recipeSettings.Theme)
@@ -135,6 +137,21 @@ namespace DannyT.OrchardCoreMigrator
             Console.WriteLine("Downloading Images");
             // Download images (credit to: https://github.com/redapollos/BulkFileDownloader)
             int retries = uploadUrls.AsParallel().WithDegreeOfParallelism(4).Sum(arg => DownloadFile(arg));
+
+            JArray mediaStepFiles = (JArray)mediaStep["Files"];
+            JObject mediaObject = null;
+            // remove failed media from mediastep
+            foreach (string failedUrl in failedMediaUrls)
+            {
+                for(var i = mediaStepFiles.Count()-1; i >= 0; i--)
+                {
+                    mediaObject = (JObject)mediaStepFiles[i];
+                    if (mediaObject["SourcePath"].ToString() == urlCleaner.SanitiseRelativePath(failedUrl))
+                    {
+                        mediaObject.Remove();
+                    }
+                }
+            }
 
             // deserialise receipe
             JObject recipeJson;
@@ -673,12 +690,22 @@ namespace DannyT.OrchardCoreMigrator
                         if (retries++ < 5)
                             goto retry;
                         else
+                        {
+                            failedMediaUrls.Add(url);
                             Console.WriteLine($"FAIL: {url} : {ee.Message}");
+                        }
+
                     }
                     else
                     {
+                        this.failedMediaUrls.Add(url);
                         Console.WriteLine($"FAIL: {url} : {ee.Message}");
                     }
+                }
+                else
+                {
+                    failedMediaUrls.Add(url);
+                    Console.WriteLine($"FAIL: {url} : {ee.Message}");
                 }
             }
 
