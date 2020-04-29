@@ -26,7 +26,7 @@ namespace DannyT.OrchardCoreMigrator
             );
 
             List<object> blocks = new List<object>();
-            for(var i=0; i<lines.Count(); i++)
+            for (var i = 0; i < lines.Count(); i++)
             {
                 var line = lines[i];
                 if (line.StartsWith("<h")) // heading
@@ -37,12 +37,17 @@ namespace DannyT.OrchardCoreMigrator
                         data = new
                         {
                             text = StripHtml(line),
-                            level = line.Substring(2,1)
+                            level = line.Substring(2, 1)
                         }
                     });
                 }
-                else if(line.StartsWith("<"))
+                else if (line.StartsWith("<"))
                 {
+                    if (line.StartsWith("<!--"))
+                    {
+                        continue;
+                    }
+
                     blocks.Add(new
                     {
                         type = "raw",
