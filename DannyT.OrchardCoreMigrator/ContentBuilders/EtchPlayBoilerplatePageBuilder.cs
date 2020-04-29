@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
 namespace DannyT.OrchardCoreMigrator.ContentBuilders
@@ -14,6 +15,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
 
         public IEnumerable<JObject> GetContent()
         {
+            var regex = new Regex(@"\[[^]]*\]");
             return from p in WordpressItems
                    where p.Type == "page"
                    select new JObject(
@@ -35,15 +37,15 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                                new JProperty("SetHomepage", false)
                                )
                            ),
-                       new JProperty("FlowPart",
+                       new JProperty("Content",
                             new JObject(
-                                new JProperty("Widgets",
+                                new JProperty("ContentItems",
                                     new JArray(
                                         new JObject(
                                             new JProperty("ContentItemId", $"wppagewidget-{p.Id.ToString()}"),
                                            new JProperty("ContentItemVersionId", $"wppagewidget-{p.Id.ToString()}"),
-                                           new JProperty("ContentType", "RawHtml"),
-                                           new JProperty("DisplayText", null),
+                                           new JProperty("ContentType", "Section"),
+                                           new JProperty("DisplayText", "Imported Content"),
                                            new JProperty("Latest", false),
                                            new JProperty("Published", false),
                                            new JProperty("ModifiedUtc", Convert.ToDateTime(p.DatePublished)),
@@ -51,22 +53,65 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
                                            new JProperty("CreatedUtc", null),
                                            new JProperty("Owner", null),
                                            new JProperty("Author", p.CreatedByUsername),
-                                           new JProperty("RawHtml",
+                                           new JProperty("Section",
+                                           new JArray(
                                                 new JObject(
-                                                    new JProperty("Content",
+                                                    new JProperty("BackgroundColour",
                                                         new JObject(
-                                                            new JProperty("Html", p.Content)
+                                                            new JProperty("Text", "default")
+                                                            )
+                                                        )
+                                                    ),
+                                                new JObject(
+                                                    new JProperty("Alignment",
+                                                        new JObject(
+                                                            new JProperty("Text", "default")
                                                             )
                                                         )
                                                     )
-                                                ),
-                                           new JProperty("FlowMetadata",
+                                                )
+                                           ),
+                                            new JProperty("TitlePart",
+                                                new JObject(
+                                                    new JProperty("Title", "Imported Content")
+                                                )
+                                           ),
+                                            new JProperty("Children",
                                             new JObject(
-                                                new JProperty("Alignment", 3),
-                                                new JProperty("Size", 100)
+                                                new JProperty("ContentItems",
+                                                    new JArray(
+                                                        new JObject(
+                                                            new JProperty("ContentItemId", $"wppagewidget-{p.Id.ToString()}"),
+                                                           new JProperty("ContentItemVersionId", $"wppagewidget-{p.Id.ToString()}"),
+                                                           new JProperty("ContentType", "Html"),
+                                                           new JProperty("DisplayText", "Imported Content"),
+                                                           new JProperty("Latest", false),
+                                                           new JProperty("Published", false),
+                                                           new JProperty("ModifiedUtc", Convert.ToDateTime(p.DatePublished)),
+                                                           new JProperty("PublishedUtc", null),
+                                                           new JProperty("CreatedUtc", null),
+                                                           new JProperty("Owner", null),
+                                                           new JProperty("Author", p.CreatedByUsername),
+                                                           new JProperty("Html",
+                                                                new JObject(
+                                                                    new JProperty("Body",
+                                                                        new JObject(
+                                                                            new JProperty("Html", regex.Replace(p.Content, string.Empty))
+                                                                            )
+                                                                        )
+                                                                    )
+                                                                ),
+                                                            new JProperty("TitlePart",
+                                                                new JObject(
+                                                                    new JProperty("Title", "Imported Content")
+                                                                )
+                                                           )
+                                                            )
+                                                        )
+                                                    )
                                                 )
                                             )
-                                           )
+                                            )
                                         )
                                     )
                                 )
