@@ -12,7 +12,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
         public List<WordpressCategory> WordpressCategories { get; set; }
         public List<WordpressTag> WordpressTags { get; set; }
 
-        public IEnumerable<JObject> GetContent()
+        public IEnumerable<JObject> GetContent(IEnumerable<WordpressMedia> medias)
         {
             return from p in WordpressItems
                    where p.Type == "page"

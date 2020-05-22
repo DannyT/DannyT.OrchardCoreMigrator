@@ -48,6 +48,20 @@ namespace DannyT.OrchardCoreMigrator
                         continue;
                     }
 
+                    if(line.StartsWith("<p>"))
+                    {
+                        blocks.Add(new
+                        {
+                            type = "paragraph",
+                            data = new
+                            {
+                                text = line
+                            }
+                        });
+
+                        continue;
+                    }
+
                     blocks.Add(new
                     {
                         type = "raw",

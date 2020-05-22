@@ -26,6 +26,8 @@ namespace DannyT.OrchardCoreMigrator
         public List<string> Categories { get; private set; }
         public List<string> Tags { get; private set; }
 
+        public long ThumbnailId { get; set; }
+
         internal void AddCategory(string category)
         {
             Categories.Add(category);

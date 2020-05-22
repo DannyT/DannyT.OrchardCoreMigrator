@@ -5,7 +5,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
 {
     public interface IContentBuilder
     {
-        IEnumerable<JObject> GetContent();
+        IEnumerable<JObject> GetContent(IEnumerable<WordpressMedia> medias);
         List<WordpressItem> WordpressItems { get; set; }
         List<WordpressCategory> WordpressCategories { get; set; }
         List<WordpressTag> WordpressTags { get; set; }

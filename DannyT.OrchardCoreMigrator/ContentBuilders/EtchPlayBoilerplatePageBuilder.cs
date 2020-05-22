@@ -13,7 +13,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
         public List<WordpressCategory> WordpressCategories { get; set; }
         public List<WordpressTag> WordpressTags { get; set; }
 
-        public IEnumerable<JObject> GetContent()
+        public IEnumerable<JObject> GetContent(IEnumerable<WordpressMedia> medias)
         {
             var regex = new Regex(@"\[[^]]*\]");
             return from p in WordpressItems

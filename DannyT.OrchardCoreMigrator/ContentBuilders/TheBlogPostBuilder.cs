@@ -13,7 +13,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders
         public List<WordpressCategory> WordpressCategories { get; set; }
         public List<WordpressTag> WordpressTags { get; set; }
 
-        public IEnumerable<JObject> GetContent()
+        public IEnumerable<JObject> GetContent(IEnumerable<WordpressMedia> medias)
         {
             if(ParentId == string.Empty) { 
                 throw new Exception("Posts for TheBlog theme require a List ID, call GetContent(string ListId) instead.");
