@@ -37,6 +37,12 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders {
                         new JProperty ("Title", p.Title)
                     )
                 ),
+                new JProperty("SearchablePart",
+                    new JObject(
+                        new JProperty("ExcludeFromResults", false),
+                        new JProperty("Keywords", string.Empty)
+                    )
+                ),
                 new JProperty ("ContainedPart",
                     new JObject (
                         new JProperty ("ListContentItemId", ParentId),
