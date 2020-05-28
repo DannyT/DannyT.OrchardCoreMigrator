@@ -126,18 +126,18 @@ namespace DannyT.OrchardCoreMigrator
                 new JProperty ("name", "content"),
                 new JProperty ("data",
                     new JArray (
-                        GetCategories(),
-                        GetTags (),
-                        pageBuilder.GetContent(uploadUrls),
-                        postBuilder.GetContent(uploadUrls),
-                        GetRedirects()
+                        //GetCategories(),
+                        //GetTags (),
+                        //pageBuilder.GetContent(uploadUrls),
+                        postBuilder.GetContent(uploadUrls)
+                        //GetRedirects()
                     )
                 )
             );
 
             //Console.WriteLine ("Downloading Images");
             //// Download images (credit to: https://github.com/redapollos/BulkFileDownloader)
-            int retries = uploadUrls.AsParallel().WithDegreeOfParallelism(4).Sum(arg => DownloadFile(arg.DownloadUrl.ToString()));
+            //int retries = uploadUrls.AsParallel().WithDegreeOfParallelism(4).Sum(arg => DownloadFile(arg.DownloadUrl.ToString()));
 
             JArray mediaStepFiles = (JArray)mediaStep["Files"];
             JObject mediaObject = null;

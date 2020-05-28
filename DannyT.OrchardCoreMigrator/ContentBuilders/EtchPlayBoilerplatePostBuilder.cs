@@ -18,8 +18,9 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders {
 
             Html2EditorJSBlocks converter = new Html2EditorJSBlocks ();
             // Blog posts content items
-            return from p in WordpressItems
+            return (from p in WordpressItems
             where p.Type == "post"
+            orderby p.DatePublished descending
             select new JObject (
                 new JProperty ("ContentItemId", $"wppost-{p.Id.ToString()}"),
                 new JProperty ("ContentItemVersionId", $"wppost-{p.Id.ToString()}"),
@@ -99,7 +100,7 @@ namespace DannyT.OrchardCoreMigrator.ContentBuilders {
                         )
                     )
                 )
-            );
+            )).Take(20000);
         }
     }
 }
