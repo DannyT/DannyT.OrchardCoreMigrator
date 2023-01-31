@@ -237,7 +237,8 @@ namespace DannyT.OrchardCoreMigrator
             SlugHelper.Config slugConfig = new SlugHelper.Config();
             // remove question marks from titles (default replaces with dash)
             slugConfig.StringReplacements.Add("?", "");
-            SlugHelper helper = new SlugHelper();
+            slugConfig.StringReplacements.Add(".", "");
+            SlugHelper helper = new SlugHelper(slugConfig);
 
 
             foreach (WordpressItem item in wordpressItems.Where(p => p.Type == "post" || p.Type == "page"))
@@ -245,7 +246,14 @@ namespace DannyT.OrchardCoreMigrator
                 if (recipeSettings.CreateRedirects)
                 {
                     item.OldLink = urlCleaner.SanitiseRelativePath(item.Link);
-                    item.Link = $"/{DateTime.Parse(item.DatePublished).ToString(recipeSettings.PermalinkStructure)}/{helper.GenerateSlug(item.Title)}";
+                    if (item.Type == "post")
+                    {
+                        item.Link = $"/{DateTime.Parse(item.DatePublished).ToString(recipeSettings.PermalinkStructure)}/{helper.GenerateSlug(item.Title)}";
+                    }
+                    else
+                    {
+                        item.Link = $"/{helper.GenerateSlug(item.Title)}";
+                    }
                 }
                 else
                 {

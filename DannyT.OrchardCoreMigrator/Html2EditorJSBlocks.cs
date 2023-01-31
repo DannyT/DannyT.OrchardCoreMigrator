@@ -20,6 +20,9 @@ namespace DannyT.OrchardCoreMigrator
                 throw new ArgumentNullException(nameof(content));
             }
 
+            // TODO: remove this nasty hack that only works for my bodged WP setup
+            content = content.Replace("http://danny-t.co.uk/wp-content/", "/media/app/");
+            content = content.Replace("//danny-t.co.uk/wp-content/", "/media/app/");
             string[] lines = content.Split(
                 new[] { "\r\n\r\n", "\r\r", "\n\n", "\n" },
                 StringSplitOptions.None
